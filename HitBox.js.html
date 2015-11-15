@@ -28,12 +28,15 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
 * Create hitbox dimensions, handling the initial and ending velocity and time .
-* Set collider box and enemy character. Determine the attack type  and damage of the 
+* Set collider box and enemy character. Determine the attack type  and damage of the
 * attack. status checking of the character class.
+*
+*	@constructor
+*
 */
 
 function HitBox()
-{	
+{
 	/** begin time */
 	this.beginTime;
 	/** duration */
@@ -100,7 +103,7 @@ HitBox.prototype.initEmpty = function()
 	this.endingZVelocity = 0;
 
 	this.damage = null;
-	
+
 	this.active = null;
 
   return this;
@@ -116,7 +119,7 @@ HitBox.prototype.initWithDimensions = function(width, height, depth)
 	this.initEmpty();
 
 	this.collider = new Collider().initWithSettings(width, height, depth, this, false); // the last parameter indicates whether the collider is for a PlayerCharacter or not
-	
+
 
 	this.active = false;
 	this.attackType = "melee";
@@ -127,7 +130,7 @@ HitBox.prototype.initWithDimensions = function(width, height, depth)
 /**
 *	initae the attack of a character and handling enemy state
 * @param {string} command name of the attack type
-* @param {class} character character 
+* @param {class} character character
 * @param {class} class enemy character
 */
 
@@ -137,7 +140,7 @@ HitBox.prototype.initAttack = function(command , character, enemy)
 	{
 		this.initStarStorm(character);
 	}
-	
+
 	if(command == "star shot")
 	{
 		this.initStarShot(character);
@@ -147,7 +150,7 @@ HitBox.prototype.initAttack = function(command , character, enemy)
 	{
 		this.initGrab(character);
 	}
-	
+
 	this.enemy = enemy;
 	this.collider.setEnemy(enemy);
 };
@@ -157,7 +160,7 @@ HitBox.prototype.initAttack = function(command , character, enemy)
 * @param {class} character character issueing the starstorm
 */
 HitBox.prototype.initStarStorm = function(character)
-{	
+{
 	this.initWithDimensions(50,50,50);
 
 	character.setActionFrames(30);
@@ -165,19 +168,19 @@ HitBox.prototype.initStarStorm = function(character)
 	character.getCollider().setXVelocity(0);
 
 	this.owner = character;
-	
+
 	this.owner.getCollider().getNode().add(this.collider.getNode());
 	this.attackType = "melee";
-	
+
 	var xstart = this.collider.getWidth()/2 + this.owner.getCollider().getWidth()/2;
 	var ystart = 0;
-	
+
 	this.collider.setPosition(xstart, ystart, 0);
 
 	this.beginTime = 5;
 
 	this.endTime = 15;
-	
+
 	this.damage = 20;
 }
 
@@ -187,21 +190,21 @@ HitBox.prototype.initStarStorm = function(character)
 */
 
 HitBox.prototype.initStarShot = function(character)
-{	
+{
 	this.initWithDimensions(50,50,50);
 
 	character.setActionFrames(35);
-	
+
 	character.getCollider().setXVelocity(0);
 
 	this.owner = character;
-	
+
 	gameEngine.arena.getRootObject().add(this.collider.getNode());
 	this.attackType = "projectile";
-	
+
 	var xstart = character.getCollider().getNode().position.x + this.collider.getWidth()/2;
 	var ystart = character.getCollider().getNode().position.y;
-	
+
 	this.collider.setPosition(xstart, ystart, 0);
 
 	this.initialXVelocity = 10;
@@ -209,15 +212,15 @@ HitBox.prototype.initStarShot = function(character)
 	this.beginTime = 15;
 
 	this.endTime = 95;
-	
+
 	this.damage = 2;
 }
 /**
 * initiate the grab fucntion
 * @param {class} character
-*/ 
+*/
 HitBox.prototype.initGrab = function(character)
-{	
+{
 	this.initWithDimensions(50,50,50);
 
 	character.setActionFrames(95);
@@ -225,19 +228,19 @@ HitBox.prototype.initGrab = function(character)
 	character.getCollider().setXVelocity(0);
 
 	this.owner = character;
-	
+
 	this.owner.getCollider().getNode().add(this.collider.getNode());
 	this.attackType = "grab";
-	
+
 	var xstart = this.collider.getWidth()/2 + this.owner.getCollider().getWidth()/2;
 	var ystart = 0;
-	
+
 	this.collider.setPosition(xstart, ystart, 0);
 
 	this.beginTime = 15;
 
 	this.endTime = 65;
-	
+
 	this.damage = 20;
 }
 
@@ -251,7 +254,7 @@ HitBox.prototype.getCollider = function()
 };
 
 /**
-* Update the collision status, remove hitbox if needed 
+* Update the collision status, remove hitbox if needed
 */
 
 HitBox.prototype.update = function()
@@ -272,21 +275,21 @@ HitBox.prototype.update = function()
 	{
 		this.active = false;
 		this.collider.getNode().material.color.setHex (0xaf00ff); // deactivated attacks (either due to collision or time) are purple
-		
+
 		if(this.attackType == "projectile")
 		{
 			this.owner.deleteHitBox(this);
 		}
 	}
-	
+
 	this.time += 1;
-	
+
 	if(this.owner.getActionFrames() == 0 &amp;&amp; this.attackType != "projectile")
 	{
 		this.owner.deleteHitBox(this);
 	}
 };
-/** 
+/**
 * onCollision were use one collision is dectected. It determines if the attack is block or not , damage calculation and set repective velocity
 */
 
@@ -304,13 +307,14 @@ HitBox.prototype.onCollision = function()
 		this.collider.setXVelocity(this.endingXVelocity);
 		this.collider.setYVelocity(this.endingYVelocity);
 		this.collider.setZVelocity(this.endingZVelocity);
-		
+
 		if(this.attackType == "projectile")
 		{
 			this.time = this.endTime - 3; // show the projectile for 3 frames after collision
 		}
 	}
-};</code></pre>
+};
+</code></pre>
         </article>
     </section>
 
@@ -320,13 +324,13 @@ HitBox.prototype.onCollision = function()
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Mouse.html">Mouse</a></li><li><a href="PlayerCharacter.html">PlayerCharacter</a></li></ul><h3>Global</h3><ul><li><a href="global.html#active">active</a></li><li><a href="global.html#Arena">Arena</a></li><li><a href="global.html#attackType">attackType</a></li><li><a href="global.html#beginTime">beginTime</a></li><li><a href="global.html#collider">collider</a></li><li><a href="global.html#color">color</a></li><li><a href="global.html#damage">damage</a></li><li><a href="global.html#depth">depth</a></li><li><a href="global.html#endingXVelocity">endingXVelocity</a></li><li><a href="global.html#endingYVelocity">endingYVelocity</a></li><li><a href="global.html#endingZVelocity">endingZVelocity</a></li><li><a href="global.html#endTime">endTime</a></li><li><a href="global.html#enemy">enemy</a></li><li><a href="global.html#extrusionSettings">extrusionSettings</a></li><li><a href="global.html#height">height</a></li><li><a href="global.html#HitBox">HitBox</a></li><li><a href="global.html#initialXVelocity">initialXVelocity</a></li><li><a href="global.html#initialYVelocity">initialYVelocity</a></li><li><a href="global.html#initialZVelocity">initialZVelocity</a></li><li><a href="global.html#mouse">mouse</a></li><li><a href="global.html#myAudio">myAudio</a></li><li><a href="global.html#onMouseDown">onMouseDown</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUp">onMouseUp</a></li><li><a href="global.html#owner">owner</a></li><li><a href="global.html#player1">player1</a></li><li><a href="global.html#player2">player2</a></li><li><a href="global.html#rootObject">rootObject</a></li><li><a href="global.html#shading">shading</a></li><li><a href="global.html#shininess">shininess</a></li><li><a href="global.html#specular">specular</a></li><li><a href="global.html#starGeometry">starGeometry</a></li><li><a href="global.html#starPoints">starPoints</a></li><li><a href="global.html#starShape">starShape</a></li><li><a href="global.html#time">time</a></li><li><a href="global.html#width">width</a></li><li><a href="global.html#wireframe">wireframe</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Arena.html">Arena</a></li><li><a href="HitBox.html">HitBox</a></li><li><a href="Mouse.html">Mouse</a></li><li><a href="PlayerCharacter.html">PlayerCharacter</a></li><li><a href="Sound.html">Sound</a></li></ul><h3>Global</h3><ul><li><a href="global.html#color">color</a></li><li><a href="global.html#extrusionSettings">extrusionSettings</a></li><li><a href="global.html#mouse">mouse</a></li><li><a href="global.html#onMouseDown">onMouseDown</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUp">onMouseUp</a></li><li><a href="global.html#shading">shading</a></li><li><a href="global.html#shininess">shininess</a></li><li><a href="global.html#specular">specular</a></li><li><a href="global.html#starGeometry">starGeometry</a></li><li><a href="global.html#starPoints">starPoints</a></li><li><a href="global.html#starShape">starShape</a></li><li><a href="global.html#wireframe">wireframe</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Fri Nov 13 2015 17:49:37 GMT-0800 (PST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Sat Nov 14 2015 15:57:44 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>
